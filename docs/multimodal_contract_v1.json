@@ -1,0 +1,119 @@
+{
+  "contractVersion": "1.0.0-sprint001",
+  "schemaVersion": 2,
+  "canonicalCodexBaseCommit": "afd8a5e717d628bf3983d64a5b56aa3b22a3e59d",
+  "targetSprint": "AAI-MVP-01",
+  "cloudGovernance": {
+    "defaultCloudEnabled": false,
+    "deploymentApprovalEnvVar": "AAI_ALLOW_CLOUD_AI",
+    "perRunConsentField": "cloudAiConsent",
+    "zeroEgressLocalDefaultProvider": "local-ffmpeg-signal",
+    "note": "Keep cloud processing and paid API calls disabled pending explicit approval."
+  },
+  "epistemicLayers": ["E", "A", "R", "S", "F"],
+  "momentCategories": [
+    "important_dialogue",
+    "emotional_turning_point",
+    "environmental_change",
+    "new_person_or_object",
+    "location_transition",
+    "repeated_phrase",
+    "music_or_performance",
+    "potential_documentary_material",
+    "memory_association",
+    "technical_irregularity",
+    "user_defined_significance",
+    "low_information_footage"
+  ],
+  "providers": [
+    {
+      "id": "local-ffmpeg-signal",
+      "kind": "local_signal",
+      "modelName": "ffmpeg-scdet-volumedetect-v1",
+      "requiresConsent": false,
+      "isPaidOrMetered": false
+    },
+    {
+      "id": "local-whisper-asr",
+      "kind": "local_speech",
+      "modelName": "whisper-local-base",
+      "requiresConsent": false,
+      "isPaidOrMetered": false
+    },
+    {
+      "id": "google-gemini-multimodal",
+      "kind": "cloud_multimodal",
+      "sdk": "@google/genai",
+      "modelName": "gemini-4-hydrogen",
+      "userAgentHeader": "aistudio-build",
+      "requiresConsent": true,
+      "requiresDeploymentApproval": "AAI_ALLOW_CLOUD_AI=true",
+      "isPaidOrMetered": true
+    },
+    {
+      "id": "google-gemini-transcribe",
+      "kind": "cloud_speech",
+      "sdk": "@google/genai",
+      "modelName": "gemini-3.5-transcribe",
+      "apiVersion": "v1beta",
+      "jsonModeSupported": false,
+      "userAgentHeader": "aistudio-build",
+      "requiresConsent": true,
+      "requiresDeploymentApproval": "AAI_ALLOW_CLOUD_AI=true",
+      "isPaidOrMetered": true
+    },
+    {
+      "id": "openai-multimodal",
+      "kind": "cloud_multimodal",
+      "requiresConsent": true,
+      "isPaidOrMetered": true
+    },
+    {
+      "id": "azure-ai-multimodal",
+      "kind": "cloud_multimodal",
+      "requiresConsent": true,
+      "isPaidOrMetered": true
+    }
+  ],
+  "apiPrefixes": ["/api", "/api/v1"],
+  "routes": [
+    { "method": "GET", "path": "/api/v1/providers" },
+    { "method": "GET", "path": "/api/v1/contract" },
+    { "method": "GET", "path": "/api/v1/transcripts/search", "precedenceRule": "Must be registered ahead of /:assetId routes" },
+    { "method": "GET", "path": "/api/v1/jobs/:jobId", "progressRule": "Computed strictly from actual completed stages and completed chunks" },
+    { "method": "GET", "path": "/api/v1/assets" },
+    { "method": "POST", "path": "/api/v1/assets/upload" },
+    { "method": "GET", "path": "/api/v1/assets/:assetId/workspace" },
+    { "method": "POST", "path": "/api/v1/analysis/preflight" },
+    { "method": "POST", "path": "/api/v1/analysis/run" },
+    { "method": "POST", "path": "/api/v1/analysis/jobs/:jobId/resume" },
+    { "method": "POST", "path": "/api/v1/assets/:assetId/transcribe" },
+    { "method": "PATCH", "path": "/api/v1/events/:eventId" },
+    { "method": "POST", "path": "/api/v1/events/bulk-review" },
+    { "method": "POST", "path": "/api/v1/layers" },
+    { "method": "GET", "path": "/api/v1/ranking/config" },
+    { "method": "PUT", "path": "/api/v1/ranking/config" },
+    { "method": "GET", "path": "/api/v1/search" },
+    { "method": "POST", "path": "/api/v1/search" },
+    { "method": "GET", "path": "/api/v1/governance/audit" },
+    { "method": "GET", "path": "/api/v1/governance/release-manifest" },
+    { "method": "POST", "path": "/api/v1/assets/:assetId/verify-integrity" },
+    { "method": "GET", "path": "/api/v1/assets/:assetId/export" }
+  ],
+  "schemaMigrations": [
+    { "version": 1, "name": "001_initial_aai_multimodal_schema" },
+    {
+      "version": 2,
+      "name": "002_soft_delete_and_provenance_links",
+      "changes": [
+        "assets.deleted_at",
+        "detected_events.deleted_at",
+        "detected_events.model_run_id",
+        "layer_records.deleted_at",
+        "layer_records.model_run_id",
+        "export_records(id, asset_id, format, source_sha256, event_count, layer_count, created_at)",
+        "narrative_scenes(id, asset_id, event_id, layer='F', title, body, start_sec, end_sec, source_reference, deleted_at, created_at, updated_at)"
+      ]
+    }
+  ]
+}

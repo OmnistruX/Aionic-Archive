@@ -1,0 +1,6 @@
+{
+  "name": "Aionic Archive Intelligence",
+  "description": "Multimodal audiovisual analysis subsystem with video understanding, significant moment detection, structured evidence-vs-interpretation layers, configurable relevance ranking, and provider-independent AI orchestration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
